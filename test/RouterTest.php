@@ -3,8 +3,8 @@
 namespace Aerys\Test;
 
 use Aerys\Client;
+use Aerys\Filter;
 use Aerys\InternalRequest;
-use Aerys\Middleware;
 
 use Aerys\Options;
 use Aerys\Response;
@@ -191,7 +191,7 @@ class RouterTest extends TestCase {
     }
 
     public function testCachedMiddlewareRoute() {
-        $middleware = new class implements Middleware {
+        $middleware = new class implements Filter {
             public function do(InternalRequest $ireq) {
                 $data = yield;
                 $data = "middleware + " . yield $data;

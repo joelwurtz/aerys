@@ -11,7 +11,7 @@ use Psr\Log\LoggerInterface as PsrLogger;
 use function Amp\call;
 use function FastRoute\simpleDispatcher;
 
-class Router implements Bootable, Middleware, Monitor, ServerObserver {
+class Router implements Bootable, Filter, Monitor, ServerObserver {
     private $state = Server::STOPPED;
     private $bootLoader;
     private $routeDispatcher;
@@ -140,11 +140,12 @@ class Router implements Bootable, Middleware, Monitor, ServerObserver {
      * Import a router or attach a callable, Middleware or Bootable.
      * Router imports do *not* import the options.
      *
-     * @param callable|Middleware|Bootable|Monitor $action
+     * @param callable|Filter|Bootable|Monitor $action
+     *
      * @return self
      */
     public function use($action) {
-        if (!(is_callable($action) || $action instanceof Middleware || $action instanceof Bootable || $action instanceof Monitor)) {
+        if (!(is_callable($action) || $action instanceof Filter || $action instanceof Bootable || $action instanceof Monitor)) {
             throw new \Error(
                 __METHOD__ . " requires a callable action or Middleware instance"
             );
@@ -218,7 +219,7 @@ class Router implements Bootable, Middleware, Monitor, ServerObserver {
      *
      * @param string $method The HTTP method verb for which this route applies
      * @param string $uri The string URI
-     * @param Bootable|Middleware|Monitor|callable ...$actions The action(s) to invoke upon matching this route
+     * @param Bootable|Filter|Monitor|callable ...$actions The action(s) to invoke upon matching this route
      * @throws \Error on invalid empty parameters
      * @return self
      */
@@ -277,7 +278,7 @@ class Router implements Bootable, Middleware, Monitor, ServerObserver {
         $server->attach($this);
         $this->bootLoader = static function (Bootable $bootable) use ($server, $logger) {
             $booted = $bootable->boot($server, $logger);
-            if ($booted !== null && !$booted instanceof Middleware && !is_callable($booted)) {
+            if ($booted !== null && !$booted instanceof Filter && !is_callable($booted)) {
                 throw new \Error("Any return value of ".get_class($bootable).'::boot() must return an instance of Aerys\Middleware and/or be callable');
             }
             return $booted ?? $bootable;
@@ -305,9 +306,9 @@ class Router implements Bootable, Middleware, Monitor, ServerObserver {
                     $booted[$hash] = ($this->bootLoader)($action[0]);
                 }
             }
-            if ($action instanceof Middleware) {
+            if ($action instanceof Filter) {
                 $middlewares[] = [$action, "do"];
-            } elseif (is_array($action) && $action[0] instanceof Middleware) {
+            } elseif (is_array($action) && $action[0] instanceof Filter) {
                 $middlewares[] = [$action[0], "do"];
             }
             if ($action instanceof Monitor) {

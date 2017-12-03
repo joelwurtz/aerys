@@ -4,10 +4,10 @@ namespace Aerys\Test;
 
 use Aerys\Bootable;
 use Aerys\Client;
+use Aerys\Filter;
 use Aerys\HttpDriver;
 use Aerys\InternalRequest;
 use Aerys\Logger;
-use Aerys\Middleware;
 use Aerys\Options;
 use Aerys\Server;
 use Aerys\Ticker;
@@ -313,7 +313,7 @@ class WebsocketParserTest extends TestCase {
             $ws = \Aerys\websocket($ws);
 
             $responder = $ws->boot($server, $logger);
-            $this->assertInstanceOf(Middleware::class, $responder);
+            $this->assertInstanceOf(Filter::class, $responder);
             $middlewares = [[$responder, "do"]];
             $vhosts->use(new Vhost("localhost", [["0.0.0.0", 80], ["::", 80]], $responder, $middlewares));
 
