@@ -1,0 +1,11 @@
+{
+    "servers": [
+        {
+            "url": "ws://172.17.42.1:9001/ws"
+        }
+    ],
+    "outdir": "./reports/servers",
+    "cases": ["*"],
+    "exclude-cases": ["7.*", "12.*", "13.*"],
+    "exclude-agent-cases": {}
+}
